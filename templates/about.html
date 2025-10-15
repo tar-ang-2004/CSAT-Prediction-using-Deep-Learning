@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block title %}About{% endblock %}
+
+{% block content %}
+<section class="py-12 min-h-screen">
+    <div class="container mx-auto px-6 max-w-6xl">
+        <!-- Page Header -->
+        <div class="text-center mb-16 animate-fade-in-up">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 gradient-text">
+                About DeepCSAT
+            </h1>
+            <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+                AI-powered customer satisfaction prediction using deep learning
+            </p>
+        </div>
+        
+        <!-- Project Overview -->
+        <div class="glass rounded-2xl p-8 md:p-12 mb-12 animate-fade-in-up">
+            <h2 class="text-3xl font-bold mb-6 flex items-center">
+                <i class="fas fa-lightbulb mr-4 text-yellow-400"></i>
+                Project Overview
+            </h2>
+            <div class="prose prose-invert max-w-none">
+                <p class="text-gray-300 text-lg leading-relaxed mb-4">
+                    DeepCSAT is an advanced machine learning solution designed to predict Customer Satisfaction (CSAT) scores 
+                    for e-commerce customer support interactions. By leveraging deep learning neural networks, the system 
+                    analyzes multiple dimensions of customer interactions to provide accurate satisfaction predictions.
+                </p>
+                <p class="text-gray-300 text-lg leading-relaxed">
+                    In today's competitive e-commerce landscape, understanding customer satisfaction is crucial for business 
+                    success. This project bridges the gap between raw interaction data and actionable insights, enabling 
+                    businesses to proactively improve customer experience and reduce churn.
+                </p>
+            </div>
+        </div>
+        
+        <!-- Key Objectives -->
+        <div class="grid md:grid-cols-2 gap-8 mb-12">
+            <div class="glass rounded-2xl p-8 animate-on-scroll hover-glow">
+                <h3 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-bullseye mr-3 text-primary-400"></i>
+                    Project Objectives
+                </h3>
+                <ul class="space-y-4">
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-green-400 mr-3 mt-1 flex-shrink-0"></i>
+                        <span class="text-gray-300">Build accurate deep learning model for CSAT prediction</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-green-400 mr-3 mt-1 flex-shrink-0"></i>
+                        <span class="text-gray-300">Identify key factors influencing customer satisfaction</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-green-400 mr-3 mt-1 flex-shrink-0"></i>
+                        <span class="text-gray-300">Provide real-time prediction capabilities</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-green-400 mr-3 mt-1 flex-shrink-0"></i>
+                        <span class="text-gray-300">Enable data-driven service improvement decisions</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="glass rounded-2xl p-8 animate-on-scroll hover-glow">
+                <h3 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-cogs mr-3 text-accent-400"></i>
+                    Technical Stack
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
+                        <span class="text-gray-300">Backend</span>
+                        <span class="font-semibold text-primary-400">Flask (Python)</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
+                        <span class="text-gray-300">Frontend</span>
+                        <span class="font-semibold text-primary-400">Tailwind CSS</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
+                        <span class="text-gray-300">ML Framework</span>
+                        <span class="font-semibold text-primary-400">TensorFlow/Keras</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
+                        <span class="text-gray-300">Data Processing</span>
+                        <span class="font-semibold text-primary-400">Pandas, NumPy</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
+                        <span class="text-gray-300">Visualization</span>
+                        <span class="font-semibold text-primary-400">Plotly, Seaborn</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Model Architecture -->
+        <div class="glass rounded-2xl p-8 md:p-12 mb-12 animate-on-scroll">
+            <h2 class="text-3xl font-bold mb-8 flex items-center">
+                <i class="fas fa-brain mr-4 text-primary-400"></i>
+                Deep Learning Architecture
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-slate-800/50 rounded-xl p-6 text-center">
+                    <div class="text-4xl font-bold gradient-text mb-2">21</div>
+                    <div class="text-gray-400">Input Features</div>
+                </div>
+                <div class="bg-slate-800/50 rounded-xl p-6 text-center">
+                    <div class="text-4xl font-bold gradient-text mb-2">4+</div>
+                    <div class="text-gray-400">Hidden Layers</div>
+                </div>
+                <div class="bg-slate-800/50 rounded-xl p-6 text-center">
+                    <div class="text-4xl font-bold gradient-text mb-2">1</div>
+                    <div class="text-gray-400">Output (CSAT Score)</div>
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="border-l-4 border-primary-500 pl-6 py-2">
+                    <h4 class="font-bold text-lg mb-2">Input Layer</h4>
+                    <p class="text-gray-400">Accepts 21 engineered features including sentiment scores, response times, agent metrics, and product information.</p>
+                </div>
+                <div class="border-l-4 border-accent-500 pl-6 py-2">
+                    <h4 class="font-bold text-lg mb-2">Hidden Layers</h4>
+                    <p class="text-gray-400">Multiple dense layers with ReLU activation, batch normalization, and dropout for regularization to prevent overfitting.</p>
+                </div>
+                <div class="border-l-4 border-green-500 pl-6 py-2">
+                    <h4 class="font-bold text-lg mb-2">Output Layer</h4>
+                    <p class="text-gray-400">Single neuron with linear activation to predict continuous CSAT score on a scale of 1 to 5.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features Used -->
+        <div class="glass rounded-2xl p-8 md:p-12 mb-12 animate-on-scroll">
+            <h2 class="text-3xl font-bold mb-8 flex items-center">
+                <i class="fas fa-list-check mr-4 text-primary-400"></i>
+                Input Features
+            </h2>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="text-xl font-bold mb-4 text-primary-400">Customer Interaction</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li class="flex items-center"><i class="fas fa-dot-circle text-xs text-primary-400 mr-3"></i>Response Time (hours)</li>
+                        <li class="flex items-center"><i class="fas fa-dot-circle text-xs text-primary-400 mr-3"></i>Connected Handling Time</li>
+                        <li class="flex items-center"><i class="fas fa-dot-circle text-xs text-primary-400 mr-3"></i>Issue Frequency</li>
+                        <li class="flex items-center"><i class="fas fa-dot-circle text-xs text-primary-400 mr-3"></i>Channel Name (encoded)</li>
+                        <li class="flex items-center"><i class="fas fa-dot-circle text-xs text-primary-400 mr-3"></i>Issue Hour & Day</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-xl font-bold mb-4 text-accent-400">Sentiment Analysis</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li class="flex items-center"><i class="fas fa-dot-circle text-xs text-accent-400 mr-3"></i>Positive Sentiment Score</li>
+                        <li class="flex items-center"><i class="fas fa-dot-circle text-xs text-accent-400 mr-3"></i>Negative Sentiment Score</li>
+                        <li class="flex items-center"><i class="fas fa-dot-circle text-xs text-accent-400 mr-3"></i>Remarks Length</li>
+                        <li class="flex items-center"><i class="fas fa-dot-circle text-xs text-accent-400 mr-3"></i>Has Remarks Flag</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-xl font-bold mb-4 text-green-400">Agent Performance</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li class="flex items-center"><i class="fas fa-dot-circle text-xs text-green-400 mr-3"></i>Agent Case Count</li>
+                        <li class="flex items-center"><i class="fas fa-dot-circle text-xs text-green-400 mr-3"></i>Tenure Bucket (encoded)</li>
+                        <li class="flex items-center"><i class="fas fa-dot-circle text-xs text-green-400 mr-3"></i>Agent Shift (encoded)</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-xl font-bold mb-4 text-yellow-400">Product & Context</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li class="flex items-center"><i class="fas fa-dot-circle text-xs text-yellow-400 mr-3"></i>Item Price</li>
+                        <li class="flex items-center"><i class="fas fa-dot-circle text-xs text-yellow-400 mr-3"></i>Product Category (encoded)</li>
+                        <li class="flex items-center"><i class="fas fa-dot-circle text-xs text-yellow-400 mr-3"></i>Price Category (encoded)</li>
+                        <li class="flex items-center"><i class="fas fa-dot-circle text-xs text-yellow-400 mr-3"></i>Customer City (freq encoded)</li>
+                        <li class="flex items-center"><i class="fas fa-dot-circle text-xs text-yellow-400 mr-3"></i>Sub-category (freq encoded)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dataset Information -->
+        <div class="glass rounded-2xl p-8 md:p-12 mb-12 animate-on-scroll">
+            <h2 class="text-3xl font-bold mb-6 flex items-center">
+                <i class="fas fa-database mr-4 text-primary-400"></i>
+                Dataset Information
+            </h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Overview</h4>
+                    <p class="text-gray-300 mb-4">
+                        The model is trained on a comprehensive e-commerce customer support dataset containing approximately 
+                        85,000 real customer interactions across various channels, product categories, and support scenarios.
+                    </p>
+                    <div class="space-y-2">
+                        <div class="flex justify-between p-3 bg-slate-800/50 rounded-lg">
+                            <span class="text-gray-400">Total Records</span>
+                            <span class="font-semibold">~85,000</span>
+                        </div>
+                        <div class="flex justify-between p-3 bg-slate-800/50 rounded-lg">
+                            <span class="text-gray-400">Features</span>
+                            <span class="font-semibold">21 Engineered</span>
+                        </div>
+                        <div class="flex justify-between p-3 bg-slate-800/50 rounded-lg">
+                            <span class="text-gray-400">Target Variable</span>
+                            <span class="font-semibold">CSAT Score (1-5)</span>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Data Sources</h4>
+                    <ul class="space-y-3">
+                        <li class="flex items-start p-3 bg-slate-800/50 rounded-lg">
+                            <i class="fas fa-check text-green-400 mr-3 mt-1"></i>
+                            <span class="text-gray-300">Customer support tickets and interactions</span>
+                        </li>
+                        <li class="flex items-start p-3 bg-slate-800/50 rounded-lg">
+                            <i class="fas fa-check text-green-400 mr-3 mt-1"></i>
+                            <span class="text-gray-300">Agent performance metrics and profiles</span>
+                        </li>
+                        <li class="flex items-start p-3 bg-slate-800/50 rounded-lg">
+                            <i class="fas fa-check text-green-400 mr-3 mt-1"></i>
+                            <span class="text-gray-300">Product and order information</span>
+                        </li>
+                        <li class="flex items-start p-3 bg-slate-800/50 rounded-lg">
+                            <i class="fas fa-check text-green-400 mr-3 mt-1"></i>
+                            <span class="text-gray-300">Customer satisfaction survey responses</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Use Cases -->
+        <div class="glass rounded-2xl p-8 md:p-12 mb-12 animate-on-scroll">
+            <h2 class="text-3xl font-bold mb-6 flex items-center">
+                <i class="fas fa-rocket mr-4 text-primary-400"></i>
+                Business Applications
+            </h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-slate-800/50 rounded-xl p-6 hover-glow">
+                    <i class="fas fa-headset text-3xl text-primary-400 mb-4"></i>
+                    <h4 class="text-lg font-bold mb-2">Service Quality Monitoring</h4>
+                    <p class="text-gray-400 text-sm">Real-time tracking of customer satisfaction trends to identify service issues early.</p>
+                </div>
+                <div class="bg-slate-800/50 rounded-xl p-6 hover-glow">
+                    <i class="fas fa-users text-3xl text-accent-400 mb-4"></i>
+                    <h4 class="text-lg font-bold mb-2">Agent Performance</h4>
+                    <p class="text-gray-400 text-sm">Evaluate and improve agent effectiveness based on predicted customer satisfaction.</p>
+                </div>
+                <div class="bg-slate-800/50 rounded-xl p-6 hover-glow">
+                    <i class="fas fa-chart-line text-3xl text-green-400 mb-4"></i>
+                    <h4 class="text-lg font-bold mb-2">Proactive Intervention</h4>
+                    <p class="text-gray-400 text-sm">Identify at-risk customers before they churn and take corrective action.</p>
+                </div>
+                <div class="bg-slate-800/50 rounded-xl p-6 hover-glow">
+                    <i class="fas fa-cogs text-3xl text-yellow-400 mb-4"></i>
+                    <h4 class="text-lg font-bold mb-2">Process Optimization</h4>
+                    <p class="text-gray-400 text-sm">Optimize support processes based on factors that impact satisfaction most.</p>
+                </div>
+                <div class="bg-slate-800/50 rounded-xl p-6 hover-glow">
+                    <i class="fas fa-bullhorn text-3xl text-red-400 mb-4"></i>
+                    <h4 class="text-lg font-bold mb-2">Resource Allocation</h4>
+                    <p class="text-gray-400 text-sm">Allocate resources strategically to channels and times with lower satisfaction.</p>
+                </div>
+                <div class="bg-slate-800/50 rounded-xl p-6 hover-glow">
+                    <i class="fas fa-trophy text-3xl text-purple-400 mb-4"></i>
+                    <h4 class="text-lg font-bold mb-2">Strategic Insights</h4>
+                    <p class="text-gray-400 text-sm">Drive data-driven decisions to improve overall customer experience strategy.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CTA -->
+        <div class="text-center animate-on-scroll">
+            <div class="glass rounded-2xl p-12 hover-glow">
+                <h2 class="text-3xl font-bold mb-4 gradient-text">Ready to Try It Out?</h2>
+                <p class="text-gray-400 mb-8 max-w-2xl mx-auto">
+                    Experience the power of AI-driven customer satisfaction prediction with our live demo.
+                </p>
+                <a href="{{ url_for('predict_page') }}" class="inline-block px-10 py-5 bg-gradient-to-r from-primary-500 to-accent-500 rounded-xl font-semibold text-xl hover-glow">
+                    <i class="fas fa-play-circle mr-2"></i>
+                    Try the Prediction Tool
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

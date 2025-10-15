@@ -1,0 +1,468 @@
+{% extends "base.html" %}
+
+{% block title %}Predict CSAT{% endblock %}
+
+{% block content %}
+<section class="py-12 min-h-screen">
+    <div class="container mx-auto px-6">
+        <!-- Page Header -->
+        <div class="text-center mb-12 animate-fade-in-up">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 gradient-text">
+                CSAT Score Prediction
+            </h1>
+            <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+                Enter customer interaction details to predict satisfaction score
+            </p>
+        </div>
+        
+        <div class="grid lg:grid-cols-2 gap-8">
+            <!-- Prediction Form -->
+            <div class="glass rounded-2xl p-8 animate-fade-in-up">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-edit mr-3 text-primary-400"></i>
+                    Input Features
+                </h2>
+                
+                <form id="prediction-form" class="space-y-4">
+                    <!-- Quick Fill Button -->
+                    <div class="mb-6">
+                        <button type="button" onclick="fillSampleData()" class="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold hover:shadow-lg transition-all duration-300">
+                            <i class="fas fa-magic mr-2"></i>
+                            Fill Sample Data
+                        </button>
+                    </div>
+                    
+                    <!-- Agent Case Count -->
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">
+                            Agent Case Count
+                            <span class="text-gray-500">(Number of cases handled by agent)</span>
+                        </label>
+                        <input type="number" name="agent_case_count" step="0.01" 
+                               class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 text-white placeholder-gray-500"
+                               placeholder="e.g., 150.5" required>
+                    </div>
+                    
+                    <!-- Remarks Length -->
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">
+                            Remarks Length
+                            <span class="text-gray-500">(Character count of customer remarks)</span>
+                        </label>
+                        <input type="number" name="remarks_length" step="0.01" 
+                               class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 text-white placeholder-gray-500"
+                               placeholder="e.g., 245.0" required>
+                    </div>
+                    
+                    <!-- Response Time -->
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">
+                            Response Time (Hours)
+                            <span class="text-gray-500">(Time to first response)</span>
+                        </label>
+                        <input type="number" name="response_time_hours" step="0.01" 
+                               class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 text-white placeholder-gray-500"
+                               placeholder="e.g., 2.5" required>
+                    </div>
+                    
+                    <!-- Negative Sentiment -->
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">
+                            Negative Sentiment Score
+                            <span class="text-gray-500">(0.0 to 1.0)</span>
+                        </label>
+                        <input type="number" name="negative_sentiment" step="0.01" min="0" max="1" 
+                               class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 text-white placeholder-gray-500"
+                               placeholder="e.g., 0.15" required>
+                    </div>
+                    
+                    <!-- Positive Sentiment -->
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">
+                            Positive Sentiment Score
+                            <span class="text-gray-500">(0.0 to 1.0)</span>
+                        </label>
+                        <input type="number" name="positive_sentiment" step="0.01" min="0" max="1" 
+                               class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 text-white placeholder-gray-500"
+                               placeholder="e.g., 0.82" required>
+                    </div>
+                    
+                    <!-- Item Price -->
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">
+                            Item Price
+                            <span class="text-gray-500">(Product/service price)</span>
+                        </label>
+                        <input type="number" name="Item_price" step="0.01" 
+                               class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 text-white placeholder-gray-500"
+                               placeholder="e.g., 499.99" required>
+                    </div>
+                    
+                    <!-- Connected Handling Time -->
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">
+                            Connected Handling Time
+                            <span class="text-gray-500">(Minutes spent on call/chat)</span>
+                        </label>
+                        <input type="number" name="connected_handling_time" step="0.01" 
+                               class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 text-white placeholder-gray-500"
+                               placeholder="e.g., 12.5" required>
+                    </div>
+                    
+                    <!-- Issue Frequency -->
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-300 mb-2">
+                            Issue Frequency
+                            <span class="text-gray-500">(Number of similar issues)</span>
+                        </label>
+                        <input type="number" name="issue_frequency" step="0.01" 
+                               class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 text-white placeholder-gray-500"
+                               placeholder="e.g., 5" required>
+                    </div>
+                    
+                    <!-- Additional Features (Encoded/Categorical) -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Tenure Bucket</label>
+                            <input type="number" name="Tenure Bucket_encoded" step="0.01" 
+                                   class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-white placeholder-gray-500"
+                                   placeholder="e.g., 2.5" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Agent Shift</label>
+                            <input type="number" name="Agent Shift_encoded" step="0.01" 
+                                   class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-white placeholder-gray-500"
+                                   placeholder="e.g., 1.0" required>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Issue Hour</label>
+                            <input type="number" name="issue_hour" min="0" max="23" 
+                                   class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-white placeholder-gray-500"
+                                   placeholder="e.g., 14" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Issue Day of Week</label>
+                            <input type="number" name="issue_day_of_week" min="0" max="6" 
+                                   class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-white placeholder-gray-500"
+                                   placeholder="e.g., 3" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Boolean Flags -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Has Remarks</label>
+                            <select name="has_remarks" 
+                                    class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-white" required>
+                                <option value="1">Yes</option>
+                                <option value="0">No</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Is Weekend</label>
+                            <select name="is_weekend" 
+                                    class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-white" required>
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Has Price Info</label>
+                        <select name="has_price_info" 
+                                class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-white" required>
+                            <option value="1">Yes</option>
+                            <option value="0">No</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Encoded Categorical Features -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Channel Encoded</label>
+                            <input type="number" name="channel_name_encoded" step="0.01" 
+                                   class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-white placeholder-gray-500"
+                                   placeholder="e.g., 1.2" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Category Encoded</label>
+                            <input type="number" name="category_encoded" step="0.01" 
+                                   class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-white placeholder-gray-500"
+                                   placeholder="e.g., 0.8" required>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">City Freq Encoded</label>
+                            <input type="number" name="Customer_City_freq_encoded" step="0.01" 
+                                   class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-white placeholder-gray-500"
+                                   placeholder="e.g., 0.5" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Sub-category Freq</label>
+                            <input type="number" name="Sub-category_freq_encoded" step="0.01" 
+                                   class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-white placeholder-gray-500"
+                                   placeholder="e.g., 0.3" required>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Product Category</label>
+                            <input type="number" name="Product_category_encoded" step="0.01" 
+                                   class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-white placeholder-gray-500"
+                                   placeholder="e.g., 1.5" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Price Category</label>
+                            <input type="number" name="price_category_encoded" step="0.01" 
+                                   class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-xl focus:ring-2 focus:ring-primary-500 text-white placeholder-gray-500"
+                                   placeholder="e.g., 2.0" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="pt-4">
+                        <button type="submit" class="w-full px-8 py-4 bg-gradient-to-r from-primary-500 to-accent-500 rounded-xl font-bold text-lg hover-glow transition-all duration-300">
+                            <i class="fas fa-chart-line mr-2"></i>
+                            Predict CSAT Score
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Results Panel -->
+            <div class="space-y-6">
+                <!-- Loading State -->
+                <div id="loading-panel" class="hidden glass rounded-2xl p-8 animate-fade-in">
+                    <div class="flex flex-col items-center justify-center py-12">
+                        <div class="spinner mb-4"></div>
+                        <p class="text-gray-300 text-lg">Analyzing data...</p>
+                    </div>
+                </div>
+                
+                <!-- Results Display -->
+                <div id="results-panel" class="hidden glass rounded-2xl p-8 animate-fade-in-up">
+                    <h2 class="text-2xl font-bold mb-6 flex items-center">
+                        <i class="fas fa-chart-bar mr-3 text-primary-400"></i>
+                        Prediction Results
+                    </h2>
+                    
+                    <!-- CSAT Score Display -->
+                    <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-8 mb-6 text-center">
+                        <div class="text-gray-400 text-sm uppercase tracking-wider mb-2">Predicted CSAT Score</div>
+                        <div id="csat-score" class="text-6xl font-bold gradient-text mb-3">-</div>
+                        <div id="satisfaction-level" class="text-xl font-semibold text-gray-300">-</div>
+                        
+                        <!-- Visual Score Bar -->
+                        <div class="mt-6 bg-slate-700 rounded-full h-4 overflow-hidden">
+                            <div id="score-bar" class="h-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-2">
+                            <span>1.0</span>
+                            <span>3.0</span>
+                            <span>5.0</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Interpretation -->
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <i class="fas fa-info-circle text-primary-400 mt-1"></i>
+                            <div>
+                                <h4 class="font-semibold mb-1">What this means:</h4>
+                                <p id="interpretation-text" class="text-gray-400 text-sm">-</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <i class="fas fa-clock text-primary-400 mt-1"></i>
+                            <div>
+                                <h4 class="font-semibold mb-1">Prediction Time:</h4>
+                                <p id="prediction-time" class="text-gray-400 text-sm">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Info Card -->
+                <div class="glass rounded-2xl p-6 animate-fade-in-up">
+                    <h3 class="text-lg font-bold mb-3 flex items-center">
+                        <i class="fas fa-lightbulb mr-2 text-yellow-400"></i>
+                        Quick Tips
+                    </h3>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                            <span>Higher positive sentiment typically leads to better CSAT scores</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                            <span>Faster response times correlate with higher satisfaction</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-400 mr-2 mt-1"></i>
+                            <span>Use the sample data button to see how the form works</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Random data generator for testing
+function fillSampleData() {
+    // Helper function to generate random number in range
+    const random = (min, max, decimals = 2) => {
+        return (Math.random() * (max - min) + min).toFixed(decimals);
+    };
+    
+    // Helper function to get random integer
+    const randomInt = (min, max) => {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    };
+    
+    // Generate random data with realistic ranges
+    const sampleData = {
+        'agent_case_count': random(50, 300, 1),
+        'remarks_length': random(50, 500, 0),
+        'response_time_hours': random(0.5, 24, 1),
+        'negative_sentiment': random(0, 0.5, 2),
+        'positive_sentiment': random(0.5, 1.0, 2),
+        'Item_price': random(50, 2000, 2),
+        'connected_handling_time': random(5, 45, 1),
+        'issue_frequency': randomInt(1, 10),
+        'Tenure Bucket_encoded': random(0, 5, 2),
+        'Agent Shift_encoded': random(0, 3, 2),
+        'issue_hour': randomInt(0, 23),
+        'issue_day_of_week': randomInt(0, 6),
+        'has_remarks': randomInt(0, 1),
+        'is_weekend': randomInt(0, 1),
+        'has_price_info': randomInt(0, 1),
+        'channel_name_encoded': random(0, 3, 2),
+        'category_encoded': random(0, 2, 2),
+        'Customer_City_freq_encoded': random(0, 1, 2),
+        'Sub-category_freq_encoded': random(0, 1, 2),
+        'Product_category_encoded': random(0, 3, 2),
+        'price_category_encoded': random(0, 4, 2)
+    };
+    
+    // Fill form with random data
+    Object.keys(sampleData).forEach(key => {
+        const input = document.querySelector(`[name="${key}"]`);
+        if (input) {
+            input.value = sampleData[key];
+        }
+    });
+    
+    // Show notification
+    showNotification('Random sample data loaded successfully!', 'success');
+}
+
+// Form submission handler
+document.getElementById('prediction-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Show loading panel
+    document.getElementById('loading-panel').classList.remove('hidden');
+    document.getElementById('results-panel').classList.add('hidden');
+    
+    // Collect form data
+    const formData = new FormData(this);
+    const data = {};
+    
+    formData.forEach((value, key) => {
+        data[key] = parseFloat(value);
+    });
+    
+    try {
+        // Send prediction request
+        const startTime = Date.now();
+        const response = await fetch('/api/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const endTime = Date.now();
+        const responseTime = endTime - startTime;
+        
+        const result = await response.json();
+        
+        // Hide loading, show results
+        document.getElementById('loading-panel').classList.add('hidden');
+        document.getElementById('results-panel').classList.remove('hidden');
+        
+        if (result.success) {
+            // Update score display
+            document.getElementById('csat-score').textContent = result.csat_score.toFixed(2);
+            document.getElementById('satisfaction-level').textContent = result.satisfaction_level;
+            
+            // Update score bar
+            const percentage = ((result.csat_score - 1) / 4) * 100;
+            document.getElementById('score-bar').style.width = percentage + '%';
+            
+            // Update interpretation
+            const interpretations = {
+                'Highly Satisfied': 'Excellent! The customer is highly satisfied with the service. This indicates exceptional customer experience.',
+                'Satisfied': 'Good! The customer is satisfied with the service. There\'s room for minor improvements.',
+                'Neutral': 'The customer has a neutral experience. Consider identifying pain points and improving service quality.',
+                'Dissatisfied': 'The customer is dissatisfied. Immediate attention is needed to address concerns and improve experience.',
+                'Highly Dissatisfied': 'Critical! The customer is highly dissatisfied. Urgent intervention required to prevent churn.'
+            };
+            
+            document.getElementById('interpretation-text').textContent = interpretations[result.satisfaction_level];
+            document.getElementById('prediction-time').textContent = `${responseTime}ms`;
+            
+            // Show success notification
+            showNotification(`Prediction complete: CSAT Score ${result.csat_score.toFixed(2)}`, 'success');
+            
+        } else {
+            throw new Error(result.error || 'Prediction failed');
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('loading-panel').classList.add('hidden');
+        showNotification('Error: ' + error.message, 'error');
+    }
+});
+
+// Notification function
+function showNotification(message, type = 'info') {
+    const colors = {
+        'success': 'from-green-500 to-emerald-500',
+        'error': 'from-red-500 to-rose-500',
+        'info': 'from-blue-500 to-cyan-500'
+    };
+    
+    const notification = document.createElement('div');
+    notification.className = `fixed top-24 right-6 px-6 py-4 bg-gradient-to-r ${colors[type]} rounded-xl shadow-2xl z-50 animate-slide-in-right`;
+    notification.innerHTML = `
+        <div class="flex items-center space-x-3">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} text-white text-xl"></i>
+            <span class="text-white font-medium">${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100px)';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+</script>
+{% endblock %}

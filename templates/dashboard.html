@@ -1,0 +1,867 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_head %}
+<!-- Chart.js for beautiful charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<section class="py-12 min-h-screen">
+    <div class="container mx-auto px-6">
+        <!-- Page Header -->
+        <div class="text-center mb-12 animate-fade-in-up">
+            <div class="flex items-center justify-center mb-4">
+                <h1 class="text-4xl md:text-5xl font-bold gradient-text">
+                    Model Dashboard
+                </h1>
+                <div id="live-indicator" class="ml-4 flex items-center space-x-2 px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full">
+                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span class="text-xs text-green-400 font-semibold">LIVE</span>
+                </div>
+            </div>
+            <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+                Performance metrics and insights from the deep learning model • Auto-updates every 5s
+            </p>
+        </div>
+        
+        <!-- Performance Metrics Grid -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12 animate-fade-in-up" style="animation-delay: 0.1s;">
+            <!-- Total Predictions Card -->
+            <div class="glass rounded-2xl p-6 hover-glow">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-chart-line text-white text-xl"></i>
+                    </div>
+                    <i class="fas fa-info-circle text-gray-500 cursor-help" title="Total predictions made"></i>
+                </div>
+                <div id="total-predictions" class="text-3xl font-bold gradient-text mb-2">
+                    0
+                </div>
+                <div class="text-gray-400 text-sm">Total Predictions</div>
+            </div>
+            
+            <!-- Average Score Card -->
+            <div class="glass rounded-2xl p-6 hover-glow">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-star text-white text-xl"></i>
+                    </div>
+                    <i class="fas fa-info-circle text-gray-500 cursor-help" title="Average CSAT Score"></i>
+                </div>
+                <div id="average-score" class="text-3xl font-bold gradient-text mb-2">
+                    0.0
+                </div>
+                <div class="text-gray-400 text-sm">Average Score</div>
+            </div>
+            
+            <!-- Satisfaction Rate Card -->
+            <div class="glass rounded-2xl p-6 hover-glow">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-thumbs-up text-white text-xl"></i>
+                    </div>
+                    <i class="fas fa-info-circle text-gray-500 cursor-help" title="Percentage of satisfied customers (>3.5)"></i>
+                </div>
+                <div id="satisfaction-rate" class="text-3xl font-bold gradient-text mb-2">
+                    0%
+                </div>
+                <div class="text-gray-400 text-sm">Satisfaction Rate</div>
+            </div>
+            
+            <!-- Min/Max Scores Card -->
+            <div class="glass rounded-2xl p-6 hover-glow">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-arrows-alt-v text-white text-xl"></i>
+                    </div>
+                    <i class="fas fa-info-circle text-gray-500 cursor-help" title="Min and Max scores recorded"></i>
+                </div>
+                <div class="text-2xl font-bold gradient-text mb-2">
+                    <span id="min-score">0</span> - <span id="max-score">0</span>
+                </div>
+                <div class="text-gray-400 text-sm">Score Range</div>
+            </div>
+            
+            <!-- Model RMSE Card -->
+            <div class="glass rounded-2xl p-6 hover-glow">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-square-root-alt text-white text-xl"></i>
+                    </div>
+                    <i class="fas fa-info-circle text-gray-500 cursor-help" title="Root Mean Squared Error"></i>
+                </div>
+                <div class="text-3xl font-bold gradient-text mb-2">
+                    {{ "%.2f"|format(metrics.rmse) if metrics and 'rmse' in metrics else 'N/A' }}
+                </div>
+                <div class="text-gray-400 text-sm">Model RMSE</div>
+            </div>
+        </div>
+        
+        <!-- Advanced Analytics Charts -->
+        <div class="grid lg:grid-cols-2 gap-8 mb-12">
+            <!-- Score Trend Line Chart -->
+            <div class="glass rounded-2xl p-8 animate-on-scroll">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-chart-area mr-3 text-primary-400"></i>
+                    Score Trend (Last 50 Predictions)
+                </h2>
+                <div style="position: relative; height: 300px;">
+                    <canvas id="scoreTrendChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Hourly Activity Chart -->
+            <div class="glass rounded-2xl p-8 animate-on-scroll">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-clock mr-3 text-accent-400"></i>
+                    Hourly Predictions (Last 24 Hours)
+                </h2>
+                <div style="position: relative; height: 300px;">
+                    <canvas id="hourlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Distribution and Statistics -->
+        <div class="grid lg:grid-cols-3 gap-8 mb-12">
+            <!-- Score Distribution Pie Chart -->
+            <div class="glass rounded-2xl p-8 animate-on-scroll">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-chart-pie mr-3 text-primary-400"></i>
+                    Distribution
+                </h2>
+                
+                <!-- Chart and Legend Container -->
+                <div class="flex flex-col items-center">
+                    <!-- Donut Chart -->
+                    <div style="position: relative; height: 220px; width: 100%; max-width: 280px;">
+                        <canvas id="distributionChart"></canvas>
+                    </div>
+                    
+                    <!-- Custom Legend -->
+                    <div class="mt-6 w-full space-y-3">
+                        <div class="flex items-center justify-between bg-slate-800/50 rounded-lg px-4 py-2 hover:bg-slate-800 transition-all duration-200 cursor-pointer" data-legend-index="0">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                <span class="text-sm text-gray-300">Highly Satisfied</span>
+                            </div>
+                            <span id="legend-hs" class="text-sm font-bold text-green-400">0%</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between bg-slate-800/50 rounded-lg px-4 py-2 hover:bg-slate-800 transition-all duration-200 cursor-pointer" data-legend-index="1">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                                <span class="text-sm text-gray-300">Satisfied</span>
+                            </div>
+                            <span id="legend-s" class="text-sm font-bold text-blue-400">0%</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between bg-slate-800/50 rounded-lg px-4 py-2 hover:bg-slate-800 transition-all duration-200 cursor-pointer" data-legend-index="2">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <span class="text-sm text-gray-300">Neutral</span>
+                            </div>
+                            <span id="legend-n" class="text-sm font-bold text-yellow-400">0%</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between bg-slate-800/50 rounded-lg px-4 py-2 hover:bg-slate-800 transition-all duration-200 cursor-pointer" data-legend-index="3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                                <span class="text-sm text-gray-300">Dissatisfied</span>
+                            </div>
+                            <span id="legend-d" class="text-sm font-bold text-orange-400">0%</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between bg-slate-800/50 rounded-lg px-4 py-2 hover:bg-slate-800 transition-all duration-200 cursor-pointer" data-legend-index="4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <span class="text-sm text-gray-300">Highly Dissatisfied</span>
+                            </div>
+                            <span id="legend-hd" class="text-sm font-bold text-red-400">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Daily Predictions Bar Chart -->
+            <div class="glass rounded-2xl p-8 animate-on-scroll col-span-2">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-calendar-alt mr-3 text-green-400"></i>
+                    Daily Predictions (Last 7 Days)
+                </h2>
+                <div style="position: relative; height: 300px;">
+                    <canvas id="dailyChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Real-Time Statistics Section -->
+        <div class="grid lg:grid-cols-2 gap-8 mb-12">
+            <!-- Score Distribution Chart (Bars) -->
+            <div class="glass rounded-2xl p-8 animate-on-scroll">
+                <h2 class="text-2xl font-bold mb-6 flex items-center justify-between">
+                    <span>
+                        <i class="fas fa-chart-pie mr-3 text-primary-400"></i>
+                        Score Distribution
+                    </span>
+                    <span id="last-updated" class="text-xs text-gray-500">Never</span>
+                </h2>
+                
+                <div class="space-y-4">
+                    <!-- Highly Satisfied -->
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-sm text-gray-300 flex items-center">
+                                <i class="fas fa-smile-beam text-green-400 mr-2"></i>
+                                Highly Satisfied (4.5-5.0)
+                            </span>
+                            <span id="highly-satisfied-count" class="text-sm font-bold text-green-400">0 (0%)</span>
+                        </div>
+                        <div class="bg-slate-700 rounded-full h-3 overflow-hidden">
+                            <div id="highly-satisfied-bar" class="bg-gradient-to-r from-green-500 to-emerald-500 h-full transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Satisfied -->
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-sm text-gray-300 flex items-center">
+                                <i class="fas fa-smile text-blue-400 mr-2"></i>
+                                Satisfied (3.5-4.5)
+                            </span>
+                            <span id="satisfied-count" class="text-sm font-bold text-blue-400">0 (0%)</span>
+                        </div>
+                        <div class="bg-slate-700 rounded-full h-3 overflow-hidden">
+                            <div id="satisfied-bar" class="bg-gradient-to-r from-blue-500 to-cyan-500 h-full transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Neutral -->
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-sm text-gray-300 flex items-center">
+                                <i class="fas fa-meh text-yellow-400 mr-2"></i>
+                                Neutral (2.5-3.5)
+                            </span>
+                            <span id="neutral-count" class="text-sm font-bold text-yellow-400">0 (0%)</span>
+                        </div>
+                        <div class="bg-slate-700 rounded-full h-3 overflow-hidden">
+                            <div id="neutral-bar" class="bg-gradient-to-r from-yellow-500 to-orange-500 h-full transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Dissatisfied -->
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-sm text-gray-300 flex items-center">
+                                <i class="fas fa-frown text-orange-400 mr-2"></i>
+                                Dissatisfied (1.5-2.5)
+                            </span>
+                            <span id="dissatisfied-count" class="text-sm font-bold text-orange-400">0 (0%)</span>
+                        </div>
+                        <div class="bg-slate-700 rounded-full h-3 overflow-hidden">
+                            <div id="dissatisfied-bar" class="bg-gradient-to-r from-orange-500 to-red-500 h-full transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Highly Dissatisfied -->
+                    <div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-sm text-gray-300 flex items-center">
+                                <i class="fas fa-angry text-red-400 mr-2"></i>
+                                Highly Dissatisfied (1.0-1.5)
+                            </span>
+                            <span id="highly-dissatisfied-count" class="text-sm font-bold text-red-400">0 (0%)</span>
+                        </div>
+                        <div class="bg-slate-700 rounded-full h-3 overflow-hidden">
+                            <div id="highly-dissatisfied-bar" class="bg-gradient-to-r from-red-500 to-rose-500 h-full transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Predictions -->
+            <div class="glass rounded-2xl p-8 animate-on-scroll">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-history mr-3 text-primary-400"></i>
+                    Recent Predictions
+                </h2>
+                
+                <div id="recent-predictions" class="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-inbox text-4xl mb-3"></i>
+                        <p>No predictions yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Model Information -->
+        <div class="grid lg:grid-cols-2 gap-8 mb-12">
+            <!-- Model Architecture -->
+            <div class="glass rounded-2xl p-8 animate-on-scroll">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-network-wired mr-3 text-primary-400"></i>
+                    Model Architecture
+                </h2>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center py-3 border-b border-gray-700">
+                        <span class="text-gray-400">Model Type</span>
+                        <span class="font-semibold">Deep Neural Network</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-gray-700">
+                        <span class="text-gray-400">Framework</span>
+                        <span class="font-semibold">TensorFlow/Keras</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-gray-700">
+                        <span class="text-gray-400">Input Features</span>
+                        <span class="font-semibold">21 Features</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-gray-700">
+                        <span class="text-gray-400">Output</span>
+                        <span class="font-semibold">CSAT Score (1-5)</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3">
+                        <span class="text-gray-400">Activation</span>
+                        <span class="font-semibold">ReLU / Linear</span>
+                    </div>
+                </div>
+                
+                <!-- Visual Representation -->
+                <div class="mt-8 p-6 bg-slate-800/50 rounded-xl">
+                    <div class="flex items-center justify-between">
+                        <div class="text-center flex-1">
+                            <div class="w-16 h-16 bg-primary-500/20 border-2 border-primary-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                                <span class="text-xs font-bold">21</span>
+                            </div>
+                            <div class="text-xs text-gray-400">Input Layer</div>
+                        </div>
+                        
+                        <div class="flex-1">
+                            <i class="fas fa-arrow-right text-gray-600 text-2xl mx-auto block"></i>
+                        </div>
+                        
+                        <div class="text-center flex-1">
+                            <div class="w-16 h-20 bg-accent-500/20 border-2 border-accent-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                                <i class="fas fa-layer-group text-xs"></i>
+                            </div>
+                            <div class="text-xs text-gray-400">Hidden Layers</div>
+                        </div>
+                        
+                        <div class="flex-1">
+                            <i class="fas fa-arrow-right text-gray-600 text-2xl mx-auto block"></i>
+                        </div>
+                        
+                        <div class="text-center flex-1">
+                            <div class="w-16 h-16 bg-green-500/20 border-2 border-green-500 rounded-lg mx-auto mb-2 flex items-center justify-center">
+                                <span class="text-xs font-bold">1</span>
+                            </div>
+                            <div class="text-xs text-gray-400">Output Layer</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Training Information -->
+            <div class="glass rounded-2xl p-8 animate-on-scroll">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-graduation-cap mr-3 text-primary-400"></i>
+                    Training Information
+                </h2>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center py-3 border-b border-gray-700">
+                        <span class="text-gray-400">Dataset Size</span>
+                        <span class="font-semibold">~85,000 Records</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-gray-700">
+                        <span class="text-gray-400">Train/Test Split</span>
+                        <span class="font-semibold">80% / 20%</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-gray-700">
+                        <span class="text-gray-400">Optimization</span>
+                        <span class="font-semibold">Adam Optimizer</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3 border-b border-gray-700">
+                        <span class="text-gray-400">Loss Function</span>
+                        <span class="font-semibold">Mean Squared Error</span>
+                    </div>
+                    <div class="flex justify-between items-center py-3">
+                        <span class="text-gray-400">Regularization</span>
+                        <span class="font-semibold">Dropout + L1/L2</span>
+                    </div>
+                </div>
+                
+                <!-- Performance Badge -->
+                <div class="mt-8 p-6 bg-gradient-to-br from-primary-500/20 to-accent-500/20 border border-primary-500/50 rounded-xl text-center">
+                    <div class="text-sm text-gray-400 mb-2">Model Status</div>
+                    <div class="flex items-center justify-center space-x-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                        <span class="text-xl font-bold text-green-400">Active & Ready</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feature Importance -->
+        <div class="glass rounded-2xl p-8 animate-on-scroll">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fas fa-star mr-3 text-primary-400"></i>
+                Key Features Used in Prediction
+            </h2>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% set feature_list = [
+                    {'name': 'Agent Case Count', 'icon': 'user-tie', 'color': 'blue'},
+                    {'name': 'Response Time', 'icon': 'clock', 'color': 'purple'},
+                    {'name': 'Sentiment Scores', 'icon': 'smile', 'color': 'green'},
+                    {'name': 'Item Price', 'icon': 'dollar-sign', 'color': 'yellow'},
+                    {'name': 'Handling Time', 'icon': 'stopwatch', 'color': 'red'},
+                    {'name': 'Issue Frequency', 'icon': 'redo', 'color': 'pink'},
+                    {'name': 'Agent Shift', 'icon': 'business-time', 'color': 'indigo'},
+                    {'name': 'Customer City', 'icon': 'map-marker-alt', 'color': 'cyan'},
+                    {'name': 'Product Category', 'icon': 'box', 'color': 'orange'}
+                ] %}
+                
+                {% for feature in feature_list %}
+                <div class="bg-slate-800/50 rounded-xl p-4 hover:bg-slate-800 transition-all duration-300 cursor-pointer">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-{{ feature.color }}-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-{{ feature.icon }} text-{{ feature.color }}-400"></i>
+                        </div>
+                        <span class="font-medium">{{ feature.name }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="mt-12 grid md:grid-cols-3 gap-6 animate-on-scroll">
+            <a href="{{ url_for('predict_page') }}" class="glass rounded-xl p-6 hover-glow transition-all duration-300 text-center group">
+                <i class="fas fa-chart-line text-4xl text-primary-400 mb-4 group-hover:scale-110 transition-transform duration-300"></i>
+                <h3 class="text-xl font-bold mb-2">Make Prediction</h3>
+                <p class="text-gray-400 text-sm">Test the model with new data</p>
+            </a>
+            
+            <a href="{{ url_for('about') }}" class="glass rounded-xl p-6 hover-glow transition-all duration-300 text-center group">
+                <i class="fas fa-info-circle text-4xl text-accent-400 mb-4 group-hover:scale-110 transition-transform duration-300"></i>
+                <h3 class="text-xl font-bold mb-2">Learn More</h3>
+                <p class="text-gray-400 text-sm">About the project and methodology</p>
+            </a>
+            
+            <div class="glass rounded-xl p-6 hover-glow transition-all duration-300 text-center group cursor-pointer" onclick="refreshMetrics()">
+                <i class="fas fa-sync-alt text-4xl text-green-400 mb-4 group-hover:scale-110 group-hover:rotate-180 transition-all duration-300"></i>
+                <h3 class="text-xl font-bold mb-2">Refresh Data</h3>
+                <p class="text-gray-400 text-sm">Update metrics and information</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Chart instances
+let scoreTrendChart = null;
+let distributionChart = null;
+let hourlyChart = null;
+let dailyChart = null;
+
+// Real-time statistics update
+let updateInterval = null;
+
+// Initialize all charts
+function initializeCharts() {
+    // Score Trend Line Chart
+    const trendCtx = document.getElementById('scoreTrendChart').getContext('2d');
+    scoreTrendChart = new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'CSAT Score',
+                data: [],
+                borderColor: 'rgb(99, 102, 241)',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 3,
+                pointHoverRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12,
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: 'rgb(99, 102, 241)',
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 1,
+                    max: 5,
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#9ca3af' }
+                },
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#9ca3af', maxTicksLimit: 10 }
+                }
+            }
+        }
+    });
+    
+    // Distribution Pie Chart
+    const distCtx = document.getElementById('distributionChart').getContext('2d');
+    distributionChart = new Chart(distCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Highly Satisfied', 'Satisfied', 'Neutral', 'Dissatisfied', 'Highly Dissatisfied'],
+            datasets: [{
+                data: [0, 0, 0, 0, 0],
+                backgroundColor: [
+                    'rgb(34, 197, 94)',
+                    'rgb(59, 130, 246)',
+                    'rgb(234, 179, 8)',
+                    'rgb(249, 115, 22)',
+                    'rgb(239, 68, 68)'
+                ],
+                borderWidth: 0,
+                borderColor: 'transparent'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    display: false  // Hide built-in legend, use custom one
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                    padding: 16,
+                    titleFont: { size: 14, weight: 'bold' },
+                    bodyFont: { size: 13 },
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                            return ` ${context.label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Add click handlers for custom legend items
+    document.querySelectorAll('[data-legend-index]').forEach(item => {
+        item.addEventListener('click', function() {
+            const index = parseInt(this.getAttribute('data-legend-index'));
+            distributionChart.toggleDataVisibility(index);
+            distributionChart.update();
+            
+            // Toggle opacity for visual feedback
+            if (distributionChart.getDataVisibility(index)) {
+                this.style.opacity = '1';
+            } else {
+                this.style.opacity = '0.4';
+            }
+        });
+    });
+    
+    
+    // Hourly Bar Chart
+    const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+    hourlyChart = new Chart(hourlyCtx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Predictions',
+                data: [],
+                backgroundColor: 'rgba(168, 85, 247, 0.6)',
+                borderColor: 'rgb(168, 85, 247)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#9ca3af', stepSize: 1 }
+                },
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#9ca3af', maxRotation: 45, minRotation: 45 }
+                }
+            }
+        }
+    });
+    
+    // Daily Bar Chart
+    const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+    dailyChart = new Chart(dailyCtx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Daily Predictions',
+                data: [],
+                backgroundColor: 'rgba(34, 197, 94, 0.6)',
+                borderColor: 'rgb(34, 197, 94)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 12
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#9ca3af', stepSize: 1 }
+                },
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#9ca3af' }
+                }
+            }
+        }
+    });
+}
+
+// Fetch and update statistics
+async function updateStatistics() {
+    try {
+        const response = await fetch('/api/stats');
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update metric cards
+            document.getElementById('total-predictions').textContent = data.total_predictions;
+            document.getElementById('average-score').textContent = data.average_score.toFixed(2);
+            document.getElementById('satisfaction-rate').textContent = data.satisfaction_rate.toFixed(1) + '%';
+            document.getElementById('min-score').textContent = data.min_score.toFixed(2);
+            document.getElementById('max-score').textContent = data.max_score.toFixed(2);
+            
+            // Update distribution bars
+            updateDistribution('highly_satisfied', data.score_distribution.highly_satisfied, data.distribution_percentages.highly_satisfied);
+            updateDistribution('satisfied', data.score_distribution.satisfied, data.distribution_percentages.satisfied);
+            updateDistribution('neutral', data.score_distribution.neutral, data.distribution_percentages.neutral);
+            updateDistribution('dissatisfied', data.score_distribution.dissatisfied, data.distribution_percentages.dissatisfied);
+            updateDistribution('highly_dissatisfied', data.score_distribution.highly_dissatisfied, data.distribution_percentages.highly_dissatisfied);
+            
+            // Update score trend chart
+            if (scoreTrendChart && data.score_trend.length > 0) {
+                scoreTrendChart.data.labels = data.score_trend.map((_, i) => i + 1);
+                scoreTrendChart.data.datasets[0].data = data.score_trend;
+                scoreTrendChart.update('none');
+            }
+            
+            // Update distribution pie chart
+            if (distributionChart) {
+                const distData = [
+                    data.score_distribution.highly_satisfied,
+                    data.score_distribution.satisfied,
+                    data.score_distribution.neutral,
+                    data.score_distribution.dissatisfied,
+                    data.score_distribution.highly_dissatisfied
+                ];
+                
+                distributionChart.data.datasets[0].data = distData;
+                distributionChart.update('none');
+                
+                // Update custom legend percentages
+                const total = distData.reduce((a, b) => a + b, 0);
+                if (total > 0) {
+                    document.getElementById('legend-hs').textContent = data.distribution_percentages.highly_satisfied + '%';
+                    document.getElementById('legend-s').textContent = data.distribution_percentages.satisfied + '%';
+                    document.getElementById('legend-n').textContent = data.distribution_percentages.neutral + '%';
+                    document.getElementById('legend-d').textContent = data.distribution_percentages.dissatisfied + '%';
+                    document.getElementById('legend-hd').textContent = data.distribution_percentages.highly_dissatisfied + '%';
+                }
+            }
+            
+            // Update hourly chart
+            if (hourlyChart && data.hourly_predictions) {
+                const hourlyData = Object.entries(data.hourly_predictions);
+                hourlyChart.data.labels = hourlyData.map(([time]) => {
+                    const date = new Date(time);
+                    return date.getHours() + ':00';
+                });
+                hourlyChart.data.datasets[0].data = hourlyData.map(([, count]) => count);
+                hourlyChart.update('none');
+            }
+            
+            // Update daily chart
+            if (dailyChart && data.daily_predictions) {
+                const dailyData = Object.entries(data.daily_predictions);
+                dailyChart.data.labels = dailyData.map(([date]) => {
+                    const d = new Date(date);
+                    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                });
+                dailyChart.data.datasets[0].data = dailyData.map(([, count]) => count);
+                dailyChart.update('none');
+            }
+            
+            // Update recent predictions
+            updateRecentPredictions(data.recent_predictions);
+            
+            // Update last updated timestamp
+            if (data.last_updated) {
+                const date = new Date(data.last_updated);
+                document.getElementById('last-updated').textContent = 'Updated: ' + date.toLocaleTimeString();
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching statistics:', error);
+    }
+}
+
+// Update distribution bar
+function updateDistribution(category, count, percentage) {
+    const countElement = document.getElementById(`${category}-count`);
+    const barElement = document.getElementById(`${category}-bar`);
+    
+    if (countElement && barElement) {
+        countElement.textContent = `${count} (${percentage}%)`;
+        barElement.style.width = `${percentage}%`;
+    }
+}
+
+// Update recent predictions list
+function updateRecentPredictions(predictions) {
+    const container = document.getElementById('recent-predictions');
+    
+    if (!predictions || predictions.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-inbox text-4xl mb-3"></i>
+                <p>No predictions yet</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = predictions.map(pred => {
+        const date = new Date(pred.timestamp);
+        const colorClasses = {
+            'green': 'from-green-500 to-emerald-500',
+            'blue': 'from-blue-500 to-cyan-500',
+            'yellow': 'from-yellow-500 to-orange-500',
+            'orange': 'from-orange-500 to-red-500',
+            'red': 'from-red-500 to-rose-500'
+        };
+        
+        return `
+            <div class="bg-slate-800/50 rounded-xl p-4 hover:bg-slate-800 transition-all duration-300 animate-fade-in">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-gradient-to-br ${colorClasses[pred.color]} rounded-lg flex items-center justify-center font-bold text-white">
+                            ${pred.score}
+                        </div>
+                        <div>
+                            <div class="font-semibold text-white">${pred.level}</div>
+                            <div class="text-xs text-gray-400">${date.toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <i class="fas fa-check-circle text-${pred.color}-400"></i>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Refresh metrics function
+function refreshMetrics() {
+    showNotification('Refreshing statistics...', 'info');
+    updateStatistics().then(() => {
+        showNotification('Statistics updated successfully!', 'success');
+    });
+}
+
+// Start auto-refresh
+function startAutoRefresh() {
+    updateStatistics();
+    updateInterval = setInterval(updateStatistics, 5000);
+}
+
+// Stop auto-refresh
+function stopAutoRefresh() {
+    if (updateInterval) {
+        clearInterval(updateInterval);
+        updateInterval = null;
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+    startAutoRefresh();
+});
+
+// Stop refresh when leaving page
+window.addEventListener('beforeunload', stopAutoRefresh);
+
+// Notification function
+function showNotification(message, type = 'info') {
+    const colors = {
+        'success': 'from-green-500 to-emerald-500',
+        'error': 'from-red-500 to-rose-500',
+        'info': 'from-blue-500 to-cyan-500'
+    };
+    
+    const notification = document.createElement('div');
+    notification.className = `fixed top-24 right-6 px-6 py-4 bg-gradient-to-r ${colors[type]} rounded-xl shadow-2xl z-50 animate-slide-in-right`;
+    notification.innerHTML = `
+        <div class="flex items-center space-x-3">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} text-white text-xl"></i>
+            <span class="text-white font-medium">${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100px)';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+</script>
+{% endblock %}

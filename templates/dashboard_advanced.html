@@ -1,0 +1,1182 @@
+{% extends "base.html" %}
+
+{% block title %}Advanced Analytics Dashboard{% endblock %}
+
+{% block extra_head %}
+<!-- Chart.js for beautiful charts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- WordCloud library -->
+<script src="https://cdn.jsdelivr.net/npm/wordcloud@1.2.2/src/wordcloud2.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<section class="py-12 min-h-screen">
+    <div class="container mx-auto px-6">
+        <!-- Page Header -->
+        <div class="text-center mb-12 animate-fade-in-up">
+            <div class="flex items-center justify-center mb-4">
+                <h1 class="text-4xl md:text-5xl font-bold gradient-text">
+                    Advanced Analytics Dashboard
+                </h1>
+                <div id="live-indicator" class="ml-4 flex items-center space-x-2 px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full">
+                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span class="text-xs text-green-400 font-semibold">LIVE</span>
+                </div>
+            </div>
+            <p class="text-gray-400 text-lg max-w-3xl mx-auto">
+                Comprehensive real-time insights with 10 advanced visualizations • Auto-updates every 5s
+            </p>
+        </div>
+
+        <!-- 1. Overall CSAT Prediction Overview (Area Chart) -->
+        <div class="glass rounded-2xl p-8 mb-8 animate-fade-in-up">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fas fa-chart-area mr-3 text-primary-400"></i>
+                1. Overall CSAT Prediction Overview
+            </h2>
+            <div class="grid lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2">
+                    <div style="position: relative; height: 350px;">
+                        <canvas id="overviewChart"></canvas>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-slate-800/50 rounded-xl p-4 border-l-4 border-primary-500">
+                        <div class="text-xs text-gray-400 mb-1">TREND ANALYSIS</div>
+                        <div class="text-2xl font-bold text-primary-400 mb-1" id="trendDirection">↗ Rising</div>
+                        <div class="text-xs text-gray-500">Based on last 10 predictions</div>
+                    </div>
+                    
+                    <div class="bg-slate-800/50 rounded-xl p-4 border-l-4 border-green-500">
+                        <div class="text-xs text-gray-400 mb-1">VOLATILITY</div>
+                        <div class="text-2xl font-bold text-green-400 mb-1" id="volatilityLevel">Low</div>
+                        <div class="text-xs text-gray-500">Score consistency index</div>
+                    </div>
+                    
+                    <div class="bg-slate-800/50 rounded-xl p-4 border-l-4 border-accent-500">
+                        <div class="text-xs text-gray-400 mb-1">PREDICTION VELOCITY</div>
+                        <div class="text-2xl font-bold text-accent-400 mb-1" id="predictionVelocity">0</div>
+                        <div class="text-xs text-gray-500">Predictions per hour</div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-primary-500/10 to-accent-500/10 rounded-xl p-4">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <i class="fas fa-lightbulb text-yellow-400"></i>
+                            <div class="text-xs font-semibold text-gray-300">INSIGHT</div>
+                        </div>
+                        <div class="text-xs text-gray-400" id="overviewInsight">
+                            Monitor trend patterns to identify gradual shifts in customer satisfaction over time.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Sentiment Distribution (Donut + Stacked Bar) -->
+        <div class="grid lg:grid-cols-2 gap-8 mb-8">
+            <div class="glass rounded-2xl p-8 animate-on-scroll">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-smile mr-3 text-accent-400"></i>
+                    2. Sentiment Distribution (Donut)
+                </h2>
+                <div style="position: relative; height: 300px; display: flex; align-items: center; justify-content: center;">
+                    <canvas id="sentimentDonutChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="glass rounded-2xl p-8 animate-on-scroll">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-layer-group mr-3 text-accent-400"></i>
+                    2. Sentiment Stack (By Score Range)
+                </h2>
+                <div style="position: relative; height: 300px;">
+                    <canvas id="sentimentStackChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Key Drivers of Satisfaction (Horizontal Bar Chart) -->
+        <div class="glass rounded-2xl p-8 mb-8 animate-on-scroll">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fas fa-key mr-3 text-green-400"></i>
+                3. Key Drivers of Satisfaction (Feature Importance)
+            </h2>
+            <div class="grid lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2">
+                    <div style="position: relative; height: 300px;">
+                        <canvas id="driversChart"></canvas>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-slate-800/50 rounded-xl p-4">
+                        <div class="text-xs text-gray-400 mb-2">TOP DRIVER</div>
+                        <div class="flex items-center space-x-2 mb-1">
+                            <i class="fas fa-crown text-yellow-400"></i>
+                            <div class="font-bold text-white" id="topDriver">Response Time</div>
+                        </div>
+                        <div class="text-2xl font-bold text-primary-400" id="topDriverValue">0%</div>
+                    </div>
+                    
+                    <div class="bg-slate-800/50 rounded-xl p-4">
+                        <div class="text-xs text-gray-400 mb-2">FOCUS AREAS</div>
+                        <div class="space-y-2" id="focusAreas">
+                            <div class="flex items-center space-x-2 text-sm">
+                                <i class="fas fa-circle text-primary-400" style="font-size: 6px;"></i>
+                                <span class="text-gray-300">Reduce response times</span>
+                            </div>
+                            <div class="flex items-center space-x-2 text-sm">
+                                <i class="fas fa-circle text-accent-400" style="font-size: 6px;"></i>
+                                <span class="text-gray-300">Improve sentiment scores</span>
+                            </div>
+                            <div class="flex items-center space-x-2 text-sm">
+                                <i class="fas fa-circle text-green-400" style="font-size: 6px;"></i>
+                                <span class="text-gray-300">Optimize pricing strategy</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-xl p-4">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <i class="fas fa-chart-line text-green-400"></i>
+                            <div class="text-xs font-semibold text-gray-300">RECOMMENDATION</div>
+                        </div>
+                        <div class="text-xs text-gray-400">
+                            Focus on the top 3 drivers to achieve maximum impact on customer satisfaction scores.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Real-Time CSAT Prediction Stream (Scrolling Ticker) -->
+        <div class="glass rounded-2xl p-8 mb-8 animate-on-scroll">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fas fa-stream mr-3 text-purple-400"></i>
+                4. Real-Time Prediction Stream
+            </h2>
+            <div class="bg-slate-800/50 rounded-xl p-4 overflow-hidden">
+                <div id="predictionStream" class="space-y-2 max-h-96 overflow-y-auto custom-scrollbar">
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-clock text-4xl mb-3"></i>
+                        <p>Waiting for predictions...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Segment-wise Satisfaction Comparison (Radar Chart) -->
+        <div class="glass rounded-2xl p-8 mb-8 animate-on-scroll">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fas fa-spider mr-3 text-cyan-400"></i>
+                5. Segment-wise Satisfaction Comparison
+            </h2>
+            <div class="flex justify-center">
+                <div style="position: relative; height: 400px; width: 500px;">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Emotion Detection Heatmap -->
+        <div class="glass rounded-2xl p-8 mb-8 animate-on-scroll">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fas fa-th mr-3 text-orange-400"></i>
+                6. Emotion Detection Heatmap (Time of Day)
+            </h2>
+            <div id="emotionHeatmap" class="overflow-x-auto">
+                <table class="w-full text-center">
+                    <thead>
+                        <tr class="border-b border-gray-700">
+                            <th class="p-4">Time Period</th>
+                            <th class="p-4">😊 Positive</th>
+                            <th class="p-4">😐 Neutral</th>
+                            <th class="p-4">😟 Negative</th>
+                        </tr>
+                    </thead>
+                    <tbody id="heatmapBody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 7. Emerging Themes and Topics (Word Cloud) -->
+        <div class="glass rounded-2xl p-8 mb-8 animate-on-scroll">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fas fa-cloud mr-3 text-pink-400"></i>
+                7. Emerging Themes and Topics in Feedback
+            </h2>
+            <div class="grid lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2">
+                    <div style="position: relative; height: 350px;">
+                        <canvas id="topicsChart"></canvas>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-slate-800/50 rounded-xl p-4 border-l-4 border-pink-500">
+                        <div class="text-xs text-gray-400 mb-1">TRENDING TOPIC</div>
+                        <div class="text-xl font-bold text-pink-400 mb-1" id="trendingTopic">Delivery</div>
+                        <div class="text-xs text-gray-500">Most mentioned in feedback</div>
+                    </div>
+                    
+                    <div class="bg-slate-800/50 rounded-xl p-4">
+                        <div class="text-xs text-gray-400 mb-2">TOPIC DISTRIBUTION</div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-300">🚚 Delivery</span>
+                                <span class="font-bold text-pink-400" id="topicDelivery">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-300">⭐ Quality</span>
+                                <span class="font-bold text-purple-400" id="topicQuality">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-300">💰 Price</span>
+                                <span class="font-bold text-yellow-400" id="topicPrice">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-300">🤝 Service</span>
+                                <span class="font-bold text-blue-400" id="topicService">0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-300">💬 Support</span>
+                                <span class="font-bold text-green-400" id="topicSupport">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-pink-500/10 to-purple-500/10 rounded-xl p-4">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <i class="fas fa-bullhorn text-pink-400"></i>
+                            <div class="text-xs font-semibold text-gray-300">ACTION ITEM</div>
+                        </div>
+                        <div class="text-xs text-gray-400">
+                            Create targeted improvement plans for the most mentioned feedback topics to address customer concerns.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. Satisfaction Trend vs Service Metrics (Dual Axis) -->
+        <div class="glass rounded-2xl p-8 mb-8 animate-on-scroll">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fas fa-exchange-alt mr-3 text-indigo-400"></i>
+                8. Satisfaction Trend vs Service Metrics
+            </h2>
+            <div class="grid lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2">
+                    <div style="position: relative; height: 350px;">
+                        <canvas id="dualAxisChart"></canvas>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-slate-800/50 rounded-xl p-4 border-l-4 border-indigo-500">
+                        <div class="text-xs text-gray-400 mb-1">CORRELATION</div>
+                        <div class="text-2xl font-bold text-indigo-400 mb-1" id="correlationStrength">Strong</div>
+                        <div class="text-xs text-gray-500">Response time vs CSAT</div>
+                    </div>
+                    
+                    <div class="bg-slate-800/50 rounded-xl p-4">
+                        <div class="text-xs text-gray-400 mb-2">AVG RESPONSE TIME</div>
+                        <div class="text-2xl font-bold text-orange-400 mb-1" id="avgResponseTime">0</div>
+                        <div class="text-xs text-gray-500">Hours</div>
+                    </div>
+                    
+                    <div class="bg-slate-800/50 rounded-xl p-4">
+                        <div class="text-xs text-gray-400 mb-2">TARGET SLA</div>
+                        <div class="text-xl font-bold text-green-400 mb-1">< 2.0 hrs</div>
+                        <div class="text-xs text-gray-500">Recommended threshold</div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-xl p-4">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <i class="fas fa-stopwatch text-indigo-400"></i>
+                            <div class="text-xs font-semibold text-gray-300">OPTIMIZATION TIP</div>
+                        </div>
+                        <div class="text-xs text-gray-400">
+                            Reducing response time below 2 hours typically correlates with a 15-20% increase in satisfaction scores.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9. Anomaly Detection in CSAT (Line Chart with Markers) -->
+        <div class="glass rounded-2xl p-8 mb-8 animate-on-scroll">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fas fa-exclamation-triangle mr-3 text-yellow-400"></i>
+                9. Anomaly Detection in CSAT Scores
+            </h2>
+            <div class="grid lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2">
+                    <div style="position: relative; height: 350px;">
+                        <canvas id="anomalyChart"></canvas>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-red-500/20 border border-red-500/50 rounded-xl p-4">
+                        <div class="text-xs text-gray-400 mb-1">ANOMALIES DETECTED</div>
+                        <div class="text-3xl font-bold text-red-400 mb-1" id="anomalyCount">0</div>
+                        <div class="text-xs text-gray-500">Outliers flagged</div>
+                    </div>
+                    
+                    <div class="bg-slate-800/50 rounded-xl p-4">
+                        <div class="text-xs text-gray-400 mb-2">DETECTION THRESHOLD</div>
+                        <div class="text-lg font-bold text-yellow-400 mb-1">±1.5 σ</div>
+                        <div class="text-xs text-gray-500">Standard deviations</div>
+                    </div>
+                    
+                    <div class="bg-slate-800/50 rounded-xl p-4">
+                        <div class="text-xs text-gray-400 mb-2">LAST ANOMALY</div>
+                        <div class="text-sm font-bold text-orange-400 mb-1" id="lastAnomaly">None</div>
+                        <div class="text-xs text-gray-500">Recent detection</div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 rounded-xl p-4">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <i class="fas fa-shield-alt text-yellow-400"></i>
+                            <div class="text-xs font-semibold text-gray-300">ALERT SYSTEM</div>
+                        </div>
+                        <div class="text-xs text-gray-400">
+                            Anomalies indicate unusual patterns that may require immediate investigation and corrective action.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10. Customer Retention Risk (Scatter Plot) -->
+        <div class="glass rounded-2xl p-8 mb-8 animate-on-scroll">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fas fa-chart-scatter mr-3 text-red-400"></i>
+                10. Customer Retention Risk Analysis
+            </h2>
+            <div class="grid lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2">
+                    <div style="position: relative; height: 400px;">
+                        <canvas id="riskScatterChart"></canvas>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-slate-800/50 rounded-xl p-4">
+                        <div class="text-xs text-gray-400 mb-2">RISK FORMULA</div>
+                        <div class="text-xs text-gray-300 mb-2 font-mono bg-slate-900/50 p-2 rounded">
+                            Risk = (5-CSAT)×0.4<br/>
+                            + RespTime×0.3<br/>
+                            + NegSent×0.3
+                        </div>
+                    </div>
+                    
+                    <div class="bg-slate-800/50 rounded-xl p-4">
+                        <div class="text-xs text-gray-400 mb-2">CHURN PROBABILITY</div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-red-400">High Risk</span>
+                                <span class="font-bold text-red-400">45-60%</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-yellow-400">Medium Risk</span>
+                                <span class="font-bold text-yellow-400">20-35%</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-green-400">Low Risk</span>
+                                <span class="font-bold text-green-400">5-15%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-red-500/10 to-orange-500/10 rounded-xl p-4">
+                        <div class="flex items-center space-x-2 mb-2">
+                            <i class="fas fa-user-shield text-red-400"></i>
+                            <div class="text-xs font-semibold text-gray-300">RETENTION STRATEGY</div>
+                        </div>
+                        <div class="text-xs text-gray-400">
+                            Prioritize outreach to high-risk customers within 24-48 hours to prevent churn and improve retention rates.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 grid grid-cols-3 gap-4 text-center">
+                <div class="bg-red-500/20 border border-red-500/50 rounded-lg p-4">
+                    <div class="text-3xl font-bold text-red-400" id="highRiskCount">0</div>
+                    <div class="text-sm text-gray-400">High Risk</div>
+                </div>
+                <div class="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-4">
+                    <div class="text-3xl font-bold text-yellow-400" id="mediumRiskCount">0</div>
+                    <div class="text-sm text-gray-400">Medium Risk</div>
+                </div>
+                <div class="bg-green-500/20 border border-green-500/50 rounded-lg p-4">
+                    <div class="text-3xl font-bold text-green-400" id="lowRiskCount">0</div>
+                    <div class="text-sm text-gray-400">Low Risk</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="grid md:grid-cols-3 gap-6 mt-12">
+            <a href="{{ url_for('dashboard') }}" class="glass rounded-xl p-6 hover-glow transition-all duration-300 text-center group">
+                <i class="fas fa-chart-line text-4xl text-primary-400 mb-4 group-hover:scale-110 transition-transform duration-300"></i>
+                <h3 class="text-xl font-bold mb-2">Standard Dashboard</h3>
+                <p class="text-gray-400 text-sm">View basic metrics and charts</p>
+            </a>
+            
+            <a href="{{ url_for('predict_page') }}" class="glass rounded-xl p-6 hover-glow transition-all duration-300 text-center group">
+                <i class="fas fa-magic text-4xl text-accent-400 mb-4 group-hover:scale-110 transition-transform duration-300"></i>
+                <h3 class="text-xl font-bold mb-2">Make Prediction</h3>
+                <p class="text-gray-400 text-sm">Test the model with new data</p>
+            </a>
+            
+            <div class="glass rounded-xl p-6 hover-glow transition-all duration-300 text-center group cursor-pointer" onclick="refreshMetrics()">
+                <i class="fas fa-sync-alt text-4xl text-green-400 mb-4 group-hover:scale-110 group-hover:rotate-180 transition-all duration-300"></i>
+                <h3 class="text-xl font-bold mb-2">Refresh Data</h3>
+                <p class="text-gray-400 text-sm">Update all visualizations</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Custom Scrollbar Styles -->
+<style>
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.5);
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(99, 102, 241, 0.7);
+}
+
+.heatmap-cell {
+    transition: all 0.3s ease;
+}
+.heatmap-cell:hover {
+    transform: scale(1.05);
+}
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Chart instances
+let overviewChart, sentimentDonutChart, sentimentStackChart, driversChart;
+let radarChart, topicsChart, dualAxisChart, anomalyChart, riskScatterChart;
+
+let updateInterval = null;
+
+// Initialize all charts
+function initializeCharts() {
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                labels: { color: '#9ca3af' }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12
+            }
+        }
+    };
+
+    // 1. Overall CSAT Prediction Overview (Area Chart)
+    const overviewCtx = document.getElementById('overviewChart').getContext('2d');
+    overviewChart = new Chart(overviewCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'CSAT Score',
+                data: [],
+                borderColor: 'rgb(99, 102, 241)',
+                backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 1,
+                    max: 5,
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#9ca3af' }
+                },
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#9ca3af', maxTicksLimit: 15 }
+                }
+            }
+        }
+    });
+
+    // 2a. Sentiment Donut Chart
+    const sentimentDonutCtx = document.getElementById('sentimentDonutChart').getContext('2d');
+    sentimentDonutChart = new Chart(sentimentDonutCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Positive Sentiment', 'Negative Sentiment'],
+            datasets: [{
+                data: [0, 0],
+                backgroundColor: ['rgb(34, 197, 94)', 'rgb(239, 68, 68)'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            ...commonOptions,
+            maintainAspectRatio: true,
+            plugins: {
+                ...commonOptions.plugins,
+                legend: { 
+                    position: 'bottom',
+                    align: 'center',
+                    labels: {
+                        boxWidth: 20,
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // 2b. Sentiment Stack Chart
+    const sentimentStackCtx = document.getElementById('sentimentStackChart').getContext('2d');
+    sentimentStackChart = new Chart(sentimentStackCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Highly Satisfied', 'Satisfied', 'Neutral', 'Dissatisfied', 'Highly Dissatisfied'],
+            datasets: [
+                {
+                    label: 'Positive',
+                    data: [0, 0, 0, 0, 0],
+                    backgroundColor: 'rgba(34, 197, 94, 0.7)'
+                },
+                {
+                    label: 'Negative',
+                    data: [0, 0, 0, 0, 0],
+                    backgroundColor: 'rgba(239, 68, 68, 0.7)'
+                }
+            ]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                x: { stacked: true, grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#9ca3af' } },
+                y: { stacked: true, grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#9ca3af' } }
+            }
+        }
+    });
+
+    // 3. Key Drivers (Horizontal Bar)
+    const driversCtx = document.getElementById('driversChart').getContext('2d');
+    driversChart = new Chart(driversCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Response Time', 'Sentiment', 'Price', 'Handling Time', 'Agent Performance'],
+            datasets: [{
+                label: 'Impact %',
+                data: [0, 0, 0, 0, 0],
+                backgroundColor: [
+                    'rgba(99, 102, 241, 0.7)',
+                    'rgba(168, 85, 247, 0.7)',
+                    'rgba(34, 197, 94, 0.7)',
+                    'rgba(234, 179, 8, 0.7)',
+                    'rgba(249, 115, 22, 0.7)'
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            ...commonOptions,
+            plugins: {
+                ...commonOptions.plugins,
+                legend: { display: false }
+            },
+            scales: {
+                x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#9ca3af' } },
+                y: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+            }
+        }
+    });
+
+    // 5. Radar Chart
+    const radarCtx = document.getElementById('radarChart').getContext('2d');
+    radarChart = new Chart(radarCtx, {
+        type: 'radar',
+        data: {
+            labels: ['High Value', 'Mid Value', 'Low Value', 'Weekend', 'Weekday'],
+            datasets: [{
+                label: 'Avg CSAT Score',
+                data: [0, 0, 0, 0, 0],
+                borderColor: 'rgb(6, 182, 212)',
+                backgroundColor: 'rgba(6, 182, 212, 0.2)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgb(6, 182, 212)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgb(6, 182, 212)'
+            }]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 5,
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                    pointLabels: { color: '#9ca3af', font: { size: 12 } },
+                    ticks: { color: '#9ca3af', backdropColor: 'transparent' }
+                }
+            }
+        }
+    });
+
+    // 7. Topics Bar Chart
+    const topicsCtx = document.getElementById('topicsChart').getContext('2d');
+    topicsChart = new Chart(topicsCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Delivery', 'Quality', 'Price', 'Service', 'Support'],
+            datasets: [{
+                label: 'Mentions',
+                data: [0, 0, 0, 0, 0],
+                backgroundColor: 'rgba(236, 72, 153, 0.7)',
+                borderColor: 'rgb(236, 72, 153)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...commonOptions,
+            plugins: {
+                ...commonOptions.plugins,
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#9ca3af' } },
+                x: { grid: { display: false }, ticks: { color: '#9ca3af' } }
+            }
+        }
+    });
+
+    // 8. Dual Axis Chart
+    const dualAxisCtx = document.getElementById('dualAxisChart').getContext('2d');
+    dualAxisChart = new Chart(dualAxisCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'CSAT Score',
+                    data: [],
+                    borderColor: 'rgb(99, 102, 241)',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    yAxisID: 'y',
+                    tension: 0.4,
+                    borderWidth: 2,
+                    fill: true
+                },
+                {
+                    label: 'Response Time (hrs)',
+                    data: [],
+                    borderColor: 'rgb(249, 115, 22)',
+                    backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                    yAxisID: 'y1',
+                    tension: 0.4,
+                    borderWidth: 2,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                y: {
+                    type: 'linear',
+                    position: 'left',
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#9ca3af' },
+                    title: { display: true, text: 'CSAT Score', color: '#9ca3af' }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    grid: { display: false },
+                    ticks: { color: '#9ca3af' },
+                    title: { display: true, text: 'Response Time', color: '#9ca3af' }
+                },
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#9ca3af', maxTicksLimit: 15 }
+                }
+            }
+        }
+    });
+
+    // 9. Anomaly Detection Chart
+    const anomalyCtx = document.getElementById('anomalyChart').getContext('2d');
+    anomalyChart = new Chart(anomalyCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'CSAT Score',
+                    data: [],
+                    borderColor: 'rgb(34, 197, 94)',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    tension: 0.4,
+                    borderWidth: 2,
+                    fill: true,
+                    pointRadius: 3
+                },
+                {
+                    label: 'Anomalies',
+                    data: [],
+                    borderColor: 'rgb(239, 68, 68)',
+                    backgroundColor: 'rgb(239, 68, 68)',
+                    pointRadius: 8,
+                    pointStyle: 'triangle',
+                    showLine: false
+                }
+            ]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 1,
+                    max: 5,
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#9ca3af' }
+                },
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#9ca3af', maxTicksLimit: 15 }
+                }
+            }
+        }
+    });
+
+    // 10. Risk Scatter Plot
+    const riskScatterCtx = document.getElementById('riskScatterChart').getContext('2d');
+    riskScatterChart = new Chart(riskScatterCtx, {
+        type: 'scatter',
+        data: {
+            datasets: [
+                {
+                    label: 'High Risk',
+                    data: [],
+                    backgroundColor: 'rgba(239, 68, 68, 0.6)',
+                    borderColor: 'rgb(239, 68, 68)',
+                    pointRadius: 6
+                },
+                {
+                    label: 'Medium Risk',
+                    data: [],
+                    backgroundColor: 'rgba(234, 179, 8, 0.6)',
+                    borderColor: 'rgb(234, 179, 8)',
+                    pointRadius: 6
+                },
+                {
+                    label: 'Low Risk',
+                    data: [],
+                    backgroundColor: 'rgba(34, 197, 94, 0.6)',
+                    borderColor: 'rgb(34, 197, 94)',
+                    pointRadius: 6
+                }
+            ]
+        },
+        options: {
+            ...commonOptions,
+            scales: {
+                x: {
+                    title: { display: true, text: 'CSAT Score', color: '#9ca3af' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#9ca3af' },
+                    min: 1,
+                    max: 5
+                },
+                y: {
+                    title: { display: true, text: 'Risk Score', color: '#9ca3af' },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#9ca3af' },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+// Update all visualizations
+async function updateStatistics() {
+    try {
+        const response = await fetch('/api/stats');
+        const data = await response.json();
+        
+        if (data.success) {
+            // 1. Overview Chart
+            if (overviewChart && data.score_trend.length > 0) {
+                overviewChart.data.labels = data.score_trend.map((_, i) => `#${i + 1}`);
+                overviewChart.data.datasets[0].data = data.score_trend;
+                overviewChart.update('none');
+            }
+
+            // 2a. Sentiment Donut
+            if (sentimentDonutChart && data.sentiment_data) {
+                const posAvg = data.sentiment_data.positive.length > 0 ? 
+                    data.sentiment_data.positive.reduce((a, b) => a + b, 0) : 0;
+                const negAvg = data.sentiment_data.negative.length > 0 ? 
+                    data.sentiment_data.negative.reduce((a, b) => a + b, 0) : 0;
+                
+                sentimentDonutChart.data.datasets[0].data = [posAvg, negAvg];
+                sentimentDonutChart.update('none');
+            }
+
+            // 2b. Sentiment Stack (simulated distribution)
+            if (sentimentStackChart) {
+                sentimentStackChart.data.datasets[0].data = [
+                    data.score_distribution.highly_satisfied,
+                    data.score_distribution.satisfied,
+                    data.score_distribution.neutral,
+                    Math.floor(data.score_distribution.dissatisfied * 0.3),
+                    Math.floor(data.score_distribution.highly_dissatisfied * 0.1)
+                ];
+                sentimentStackChart.data.datasets[1].data = [
+                    Math.floor(data.score_distribution.highly_satisfied * 0.1),
+                    Math.floor(data.score_distribution.satisfied * 0.2),
+                    Math.floor(data.score_distribution.neutral * 0.5),
+                    Math.floor(data.score_distribution.dissatisfied * 0.7),
+                    Math.floor(data.score_distribution.highly_dissatisfied * 0.9)
+                ];
+                sentimentStackChart.update('none');
+            }
+
+            // 3. Key Drivers
+            if (driversChart && data.feature_importance) {
+                driversChart.data.datasets[0].data = [
+                    data.feature_importance.response_time || 0,
+                    data.feature_importance.sentiment || 0,
+                    data.feature_importance.price || 0,
+                    data.feature_importance.handling_time || 0,
+                    data.feature_importance.agent_performance || 0
+                ];
+                driversChart.update('none');
+            }
+
+            // 4. Real-time Stream
+            updatePredictionStream(data.real_time_stream);
+
+            // 5. Radar Chart
+            if (radarChart && data.segment_averages) {
+                radarChart.data.datasets[0].data = [
+                    data.segment_averages.high_value || 0,
+                    data.segment_averages.mid_value || 0,
+                    data.segment_averages.low_value || 0,
+                    data.segment_averages.weekend || 0,
+                    data.segment_averages.weekday || 0
+                ];
+                radarChart.update('none');
+            }
+
+            // 6. Emotion Heatmap
+            updateEmotionHeatmap(data.emotion_heatmap);
+
+            // 7. Topics Chart
+            if (topicsChart && data.feedback_topics) {
+                topicsChart.data.datasets[0].data = [
+                    data.feedback_topics.delivery || 0,
+                    data.feedback_topics.quality || 0,
+                    data.feedback_topics.price || 0,
+                    data.feedback_topics.service || 0,
+                    data.feedback_topics.support || 0
+                ];
+                topicsChart.update('none');
+            }
+
+            // 8. Dual Axis Chart
+            if (dualAxisChart && data.service_metrics) {
+                const indices = data.service_metrics.scores.map((_, i) => i + 1);
+                dualAxisChart.data.labels = indices;
+                dualAxisChart.data.datasets[0].data = data.service_metrics.scores;
+                dualAxisChart.data.datasets[1].data = data.service_metrics.response_times;
+                dualAxisChart.update('none');
+            }
+
+            // 9. Anomaly Chart
+            if (anomalyChart && data.score_trend) {
+                anomalyChart.data.labels = data.score_trend.map((_, i) => i + 1);
+                anomalyChart.data.datasets[0].data = data.score_trend;
+                
+                // Anomaly markers
+                const anomalyData = new Array(data.score_trend.length).fill(null);
+                if (data.anomalies) {
+                    data.anomalies.forEach(anomaly => {
+                        if (anomaly.index < anomalyData.length) {
+                            anomalyData[anomaly.index] = anomaly.score;
+                        }
+                    });
+                }
+                anomalyChart.data.datasets[1].data = anomalyData;
+                anomalyChart.update('none');
+            }
+
+            // 10. Risk Scatter
+            if (riskScatterChart && data.risk_analysis) {
+                riskScatterChart.data.datasets[0].data = data.risk_analysis.high_risk.map(r => ({x: r.score, y: r.risk}));
+                riskScatterChart.data.datasets[1].data = data.risk_analysis.medium_risk.map(r => ({x: r.score, y: r.risk}));
+                riskScatterChart.data.datasets[2].data = data.risk_analysis.low_risk.map(r => ({x: r.score, y: r.risk}));
+                riskScatterChart.update('none');
+
+                // Update risk counts
+                document.getElementById('highRiskCount').textContent = data.risk_analysis.high_risk.length;
+                document.getElementById('mediumRiskCount').textContent = data.risk_analysis.medium_risk.length;
+                document.getElementById('lowRiskCount').textContent = data.risk_analysis.low_risk.length;
+            }
+            
+            // Update Insight Panels
+            updateInsightPanels(data);
+        }
+    } catch (error) {
+        console.error('Error fetching statistics:', error);
+    }
+}
+
+// Update insight panels with calculated metrics
+function updateInsightPanels(data) {
+    // 1. Overview Chart Insights
+    if (data.score_trend && data.score_trend.length >= 10) {
+        const recent = data.score_trend.slice(-10);
+        const trend = recent[recent.length - 1] - recent[0];
+        const trendDir = document.getElementById('trendDirection');
+        if (trend > 0.3) {
+            trendDir.textContent = '↗ Rising';
+            trendDir.className = 'text-2xl font-bold text-green-400 mb-1';
+        } else if (trend < -0.3) {
+            trendDir.textContent = '↘ Declining';
+            trendDir.className = 'text-2xl font-bold text-red-400 mb-1';
+        } else {
+            trendDir.textContent = '→ Stable';
+            trendDir.className = 'text-2xl font-bold text-yellow-400 mb-1';
+        }
+        
+        // Volatility
+        const variance = recent.reduce((sum, val) => sum + Math.pow(val - data.average_score, 2), 0) / recent.length;
+        const volatility = Math.sqrt(variance);
+        const volatilityEl = document.getElementById('volatilityLevel');
+        if (volatility < 0.5) {
+            volatilityEl.textContent = 'Low';
+            volatilityEl.className = 'text-2xl font-bold text-green-400 mb-1';
+        } else if (volatility < 1.0) {
+            volatilityEl.textContent = 'Medium';
+            volatilityEl.className = 'text-2xl font-bold text-yellow-400 mb-1';
+        } else {
+            volatilityEl.textContent = 'High';
+            volatilityEl.className = 'text-2xl font-bold text-red-400 mb-1';
+        }
+        
+        // Prediction velocity (predictions per hour)
+        if (data.hourly_predictions) {
+            const hourlyCount = Object.values(data.hourly_predictions).reduce((a, b) => a + b, 0);
+            const hoursWithData = Object.keys(data.hourly_predictions).length || 1;
+            const velocity = (hourlyCount / hoursWithData).toFixed(1);
+            document.getElementById('predictionVelocity').textContent = velocity;
+        }
+    }
+    
+    // 3. Key Drivers Insights
+    if (data.feature_importance) {
+        const drivers = [
+            { name: 'Response Time', value: data.feature_importance.response_time || 0 },
+            { name: 'Sentiment', value: data.feature_importance.sentiment || 0 },
+            { name: 'Price', value: data.feature_importance.price || 0 },
+            { name: 'Handling Time', value: data.feature_importance.handling_time || 0 },
+            { name: 'Agent Performance', value: data.feature_importance.agent_performance || 0 }
+        ];
+        const topDriver = drivers.reduce((max, driver) => driver.value > max.value ? driver : max, drivers[0]);
+        document.getElementById('topDriver').textContent = topDriver.name;
+        document.getElementById('topDriverValue').textContent = topDriver.value.toFixed(1) + '%';
+    }
+    
+    // 7. Topics Insights
+    if (data.feedback_topics) {
+        document.getElementById('topicDelivery').textContent = data.feedback_topics.delivery || 0;
+        document.getElementById('topicQuality').textContent = data.feedback_topics.quality || 0;
+        document.getElementById('topicPrice').textContent = data.feedback_topics.price || 0;
+        document.getElementById('topicService').textContent = data.feedback_topics.service || 0;
+        document.getElementById('topicSupport').textContent = data.feedback_topics.support || 0;
+        
+        const topics = [
+            { name: 'Delivery', value: data.feedback_topics.delivery || 0 },
+            { name: 'Quality', value: data.feedback_topics.quality || 0 },
+            { name: 'Price', value: data.feedback_topics.price || 0 },
+            { name: 'Service', value: data.feedback_topics.service || 0 },
+            { name: 'Support', value: data.feedback_topics.support || 0 }
+        ];
+        const trendingTopic = topics.reduce((max, topic) => topic.value > max.value ? topic : max, topics[0]);
+        document.getElementById('trendingTopic').textContent = trendingTopic.name;
+    }
+    
+    // 8. Service Metrics Insights
+    if (data.service_metrics && data.service_metrics.response_times.length > 0) {
+        const avgTime = data.service_metrics.response_times.reduce((a, b) => a + b, 0) / data.service_metrics.response_times.length;
+        document.getElementById('avgResponseTime').textContent = avgTime.toFixed(1);
+        
+        const correlation = avgTime > 2.5 ? 'Strong Negative' : avgTime > 2.0 ? 'Moderate' : 'Strong Positive';
+        document.getElementById('correlationStrength').textContent = correlation;
+    }
+    
+    // 9. Anomaly Detection Insights
+    if (data.anomalies) {
+        document.getElementById('anomalyCount').textContent = data.anomalies.length;
+        
+        if (data.anomalies.length > 0) {
+            const lastAnomaly = data.anomalies[data.anomalies.length - 1];
+            const date = new Date(lastAnomaly.timestamp);
+            document.getElementById('lastAnomaly').textContent = date.toLocaleTimeString();
+        } else {
+            document.getElementById('lastAnomaly').textContent = 'None detected';
+        }
+    }
+}
+
+// Update prediction stream
+function updatePredictionStream(streamData) {
+    const container = document.getElementById('predictionStream');
+    
+    if (!streamData || streamData.length === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-clock text-4xl mb-3"></i>
+                <p>Waiting for predictions...</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = streamData.map(item => `
+        <div class="bg-slate-700/50 rounded-lg p-3 flex items-center justify-between animate-fade-in border-l-4 border-${item.color}-500">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">${item.emoji}</span>
+                <div>
+                    <div class="font-bold text-white">${item.level}</div>
+                    <div class="text-xs text-gray-400">${item.timestamp}</div>
+                </div>
+            </div>
+            <div class="text-2xl font-bold text-${item.color}-400">${item.score}</div>
+        </div>
+    `).join('');
+}
+
+// Update emotion heatmap
+function updateEmotionHeatmap(heatmapData) {
+    if (!heatmapData) return;
+    
+    const body = document.getElementById('heatmapBody');
+    const periods = ['morning', 'afternoon', 'evening', 'night'];
+    const labels = { morning: '🌅 Morning', afternoon: '☀️ Afternoon', evening: '🌆 Evening', night: '🌙 Night' };
+    
+    body.innerHTML = periods.map(period => {
+        const data = heatmapData[period];
+        const total = data.positive + data.neutral + data.negative;
+        
+        const getColor = (val, max) => {
+            if (max === 0) return 'rgba(100, 100, 100, 0.2)';
+            const intensity = val / max;
+            return `rgba(99, 102, 241, ${intensity * 0.7 + 0.2})`;
+        };
+        
+        const maxVal = Math.max(data.positive, data.neutral, data.negative);
+        
+        return `
+            <tr class="border-b border-gray-700">
+                <td class="p-4 font-semibold">${labels[period]}</td>
+                <td class="p-4 heatmap-cell" style="background: ${getColor(data.positive, maxVal)}">
+                    <div class="text-lg font-bold">${data.positive}</div>
+                </td>
+                <td class="p-4 heatmap-cell" style="background: ${getColor(data.neutral, maxVal)}">
+                    <div class="text-lg font-bold">${data.neutral}</div>
+                </td>
+                <td class="p-4 heatmap-cell" style="background: ${getColor(data.negative, maxVal)}">
+                    <div class="text-lg font-bold">${data.negative}</div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Refresh all metrics
+function refreshMetrics() {
+    showNotification('Refreshing all visualizations...', 'info');
+    updateStatistics().then(() => {
+        showNotification('Dashboard updated successfully!', 'success');
+    });
+}
+
+// Start auto-refresh
+function startAutoRefresh() {
+    updateStatistics();
+    updateInterval = setInterval(updateStatistics, 5000);
+}
+
+// Stop auto-refresh
+function stopAutoRefresh() {
+    if (updateInterval) {
+        clearInterval(updateInterval);
+        updateInterval = null;
+    }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+    startAutoRefresh();
+});
+
+window.addEventListener('beforeunload', stopAutoRefresh);
+
+// Notification function
+function showNotification(message, type = 'info') {
+    const colors = {
+        'success': 'from-green-500 to-emerald-500',
+        'error': 'from-red-500 to-rose-500',
+        'info': 'from-blue-500 to-cyan-500'
+    };
+    
+    const notification = document.createElement('div');
+    notification.className = `fixed top-24 right-6 px-6 py-4 bg-gradient-to-r ${colors[type]} rounded-xl shadow-2xl z-50 animate-slide-in-right`;
+    notification.innerHTML = `
+        <div class="flex items-center space-x-3">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} text-white text-xl"></i>
+            <span class="text-white font-medium">${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateX(100px)';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+</script>
+{% endblock %}
